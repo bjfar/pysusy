@@ -1,0 +1,31 @@
+# Input file for NMSSMTools
+# Based on SUSY LES HOUCHES ACCORD II
+
+BLOCK MODSEL
+	3	1		# NMSSM particle content
+	1	0		# IMOD (0=general NMSSM, 1=mSUGRA, 2=GMSB)
+	10	0		# ISCAN (0=no scan, 1=grid scan, 2=random scan, 3=MCMC)
+	9	4		# Call micrOmegas (default 0=no, 1=relic density only,
+#				  2=dir. det. rate, 3=indir. det. rate, 4=both det. rates)
+
+BLOCK SMINPUTS
+	1	127.92e0	# ALPHA_EM^-1(MZ)
+	2	1.16639e-5	# GF
+	3	.1172e0		# ALPHA_S(MZ)
+	4	91.187e0	# MZ
+	5	4.214e0		# MB(MB) (running mass)
+	6	171.4e0		# MTOP (pole mass)
+	7	1.777e0		# MTAU
+
+# parameters to be scanned must be present, but can be left as zero. defaults used for those not specified here
+
+BLOCK MINPAR
+	1	0.0e0		# M0
+	2	0.0e0		# M12
+	3	0.0e0		# TANB at MZ
+	4	1.0e0		# SIGMU (If KAPPA or MUEFF are not input)
+	5	0.0e0   	# A0  
+
+BLOCK EXTPAR
+	61	0.0e0		# LAMBDA at MSUSY
+	64	0.0e0   	# AKAPPA at MGUT (If =/= A0)

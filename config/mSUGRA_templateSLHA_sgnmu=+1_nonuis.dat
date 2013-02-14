@@ -1,0 +1,82 @@
+# TEMPLATE FOR INITIAL SLHA FILE (NUISANCE PARS SET TO MEAN VALUES AND SGN(MU) SET TO +1)
+#
+# This file will be updated with random values for the parameters being scanned before being used as input to softsusy.
+# As a convention, set the parameters being scanned to zero here, to remind yourself which ones
+# you expect to be changed from these values. Note that the parameters to be scanned MUST be present here.
+# Any parameters not specified will get their values from the SoftSusy defaults.
+# Exponential notation may be used, i.e. 1.279180000e+02.
+
+# NOTE: THERE ARE NUMEROUS STANDARD MODEL PARAMETERS WHICH MAY BE HARDCODED INTO THE SPECTRUM
+# GENERATOR. For example, in SoftSusy the files 'lowe.h' and 'def.h' contain numerous such values.
+# SoftSusy must be recompiled if these are changed before the changes will take effect, thus we
+# cannot change them dynamically. (i.e. this is where the defaults can be found)
+
+# NOTE: Block reading code will not read in file correctly if there is not a space between a hash # and the comment (at least 
+# for 'Block' lines. Can add extra blueprints to deal with this if one really cares.
+
+#                   ('ialphaem', priors.gaussian(127.918,0.018)),  #Jun 2009 hep-ph/0906.0957v2, they reference PDG 2008, but I can't find the value myself.
+#                   ('alphas', priors.gaussian(0.1184,0.0007)),	#PDG 2011 - Physical Constants
+#                   ('MZ', priors.gaussian(91.1876,0.0021)),	#PDG 2011 - Physical Constants
+#                   ('Mbot', priors.gaussian(4.19,0.18)),		#PDG 2011 quark summary - http://pdg.lbl.gov/2010/tables/rpp2010-sum-quarks.pdf (NOTE - lower uncertainty is 0.06 not 0.18, altered distribution to make it symmetric for simplicity)
+#                   ('Mtop', priors.gaussian(172.9,1.1)), 	#PDG 2011 quark summary - http://pdg.lbl.gov/2010/tables/rpp2010-sum-quarks.pdf
+#==============================================
+# NOTES FOR SPECTRUM GENERATOR SETTINGS:
+#==============================================
+#-------------------------------
+# SUSPECT
+#-------------------------------
+#Block SU_ALGO  # !Optional SUSPECT v>=2.3* block: algorithm control parameters
+#!IF block absent (or if any parameter undefined), defaut values are taken  
+#     2    21  # 2-loop RGE (defaut, 1-loop RGE is: 11 instead)
+#     3    1   # 1: g_1(gut) = g_2(gut) consistently calculated from input
+#   (other possibility is 0: High scale input =HIGH in block EXTPAR below)
+#     4    2   # RGE accuracy: 1: moderate, 2: accurate (but slower)  
+#     6    1   #  1: M_Hu, M_Hd input (default in constrained models)
+#        (other possibility 0: MA_pole, MU(EWSB) input instead)
+#     7    2   #  choice for sparticles masses rad. corr. (=/= h):
+#               2 ->all (recommended, defaut); 1->no R.C. in squarks & gauginos.
+#     8    1   # 1 (defaut): EWSB scale=(mt_L*mt_R)^(1/2) 
+#         (Or = 0: arbitrary EWSB scale: give EWSB in Block EXTPAR below) 
+#     9    2   # Final spectrum accuracy: 1 -> 1% acc.; 2 -> 0.01 % acc.(defaut)
+#    10   2   # Higgs boson masses rad. corr. calculation options: 
+#             A simple (but very good) approximation (advantage=fast)  : 0
+#             Full one-loop calculation                                : 1
+#             One-loop  + dominant DSVZ 2-loop (defaut,recommended)    : 2
+#     11   0   # Higher order Higgs 'scheme' choice in rad. corr. at mZ:
+#          RUNNING DRbar Higgs masses at loop-level at mZ (defaut)    : 0
+#          POLE          Higgs masses at loop-level at mZ             : 1
+#
+#============================================================
+
+Block MODSEL
+	1	1	# mSUGRA=1,
+Block SMINPUTS	 # parameters to be scanned must be present, but can be left as zero. defaults used for those not specified here
+	1	127.918e0	# Electromagnetic coupling constant:    alpha^(-1) SM MSbar(MZ)
+        2       1.16639e-5      # G_F
+	3	0.1184e0	# Strong coupling constant:             alpha_s(MZ) SM MSbar     
+	4	91.1876e0	# Z boson mass:                         mZ(pole)        
+	5	4.19e0	        # Bottom quark mass:                    mb(mb) SM MSbar
+	6	172.9e0	        # Top quark mass:                       mtop(pole)
+        7       1.777e0         # Mtau(pole)            
+Block MINPAR	 # parameters to be scanned must be present, but can be left as zero. defaults used for those not specified here
+	1	0.0e0	# M0
+	2	0.0e0	# M12
+	3	0.0e0	# tanB
+	4	1	# sign(mu)
+	5	0.0e0	# A0
+Block SOFTSUSY
+	1	1.0e-05	# tol: tolerance
+	2	1	# qmix: up-quark mixing (=1) or down (=2)
+	3	0	# printout
+	4	1	# QEWSB
+	5	1	# 2-loop running
+Block SU_ALGO  # !Optional SUSPECT v>=2.3* block: algorithm control parameters
+     2    21  # 2-loop RGE (defaut, 1-loop RGE is: 11 instead)
+     3    1   # 1: g_1(gut) = g_2(gut) consistently calculated from input (other possibility is 0: High scale input =HIGH in block EXTPAR below)
+     4    2   # RGE accuracy: 1: moderate, 2: accurate (but slower)  
+     6    1   #  1: M_Hu, M_Hd input (default in constrained models)  (other possibility 0: MA_pole, MU(EWSB) input instead)
+     7    2   #  choice for sparticles masses rad. corr. (=/= h): 2 ->all (recommended, defaut); 1->no R.C. in squarks & gauginos.
+     8    1   # 1 (defaut): EWSB scale=(mt_L*mt_R)^(1/2) (Or = 0: arbitrary EWSB scale: give EWSB in Block EXTPAR below) 
+     9    2   # Final spectrum accuracy: 1 -> 1% acc.; 2 -> 0.01 % acc.(defaut)
+     10   2   # Higgs boson masses rad. corr. calculation options: 
+     11   0   # Higher order Higgs 'scheme' choice in rad. corr. at mZ:

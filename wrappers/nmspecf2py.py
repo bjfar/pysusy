@@ -21,6 +21,7 @@ import os
 from silence import Silence                                             #class to silence output of wrapped code
 
 import contextlib
+import ConfigParser  
 
 # Simple context manager function for safely changing directory 
 @contextlib.contextmanager
@@ -34,10 +35,13 @@ def chdir(dirname=None):
         os.chdir(curdir)    
         
 class NMspec:
-    def __init__(self,infile,specout,decayout,omegaout, \
+    def __init__(self,infile,specout,decayout,omegaout,workdir, \
                     template=None,options={},silenceobjs=None):
-        # Need to use abspath since we have to change directory to run nmspec
-        self.infile = os.path.abspath(infile)                                           #Either the file to use as input, or the name to given the input file which will be created from the file 'template'.
+        # Either the file to use as input, or the name to given the input file
+        # which will be created from the file 'template'.
+        # (Need to use abspath since we have to change directory to run nmspec)
+        self.infile = os.path.abspath(infile)
+        # Names to give output files
         self.spectr = os.path.abspath(specout)
         self.decay = os.path.abspath(decayout)
         self.omega = os.path.abspath(omegaout)
@@ -49,6 +53,30 @@ class NMspec:
             self.SLHAtemplate = SLHAFile(name=self.template, directory='')       #File to modify to create infile
             self.SLHAtemplate.readdata()                                #Read data from the template file
         self.options = options
+        
+        # Check that the config file specifying the location of nmspec exists.
+        # It is not great that this is required, but I didn't have time or 
+        # patience to make a fancy enough nmspec extension module that could
+        # deal with this issue itself.
+        cfg = ConfigParser.RawConfigParser()
+        cfgfile = workdir+'/nmspecf2py.cfg'
+        print 'Reading config file for nmspec wrapper: {0}'.format(cfgfile)
+        try:
+            cfg.readfp(open(cfgfile))
+        except IOError as err:
+            raise IOError('{0} - Cannot locate nmspecf2py config file: please \
+create a file in nmspecf2py module work directory ("wrappers" if using pysusy3)\
+ called "nmspecf2py.cfg", which has the contents:\n\
+\n\
+[settings]\n\
+nmspecdir = <full path to directory containing nmspec>\n\
+\n\
+If using NMSSMTools_3.2.3 this path is "<parent>/NMSSMTools_3.2.3/main".\n\
+Sorry that this is necessary; my nmspec extension module is not advanced enough\
+ to figure this out for itself, and nmspec needs to access some files in the \
+nmspec directories.'.format(err))
+        self.nmspecdir = cfg.get('settings','nmspecdir')
+        # END __init__
         
     def silence(self):
         """Kill the stdout of the current process. Lets us silence the
@@ -75,7 +103,7 @@ class NMspec:
         # files containing info about experimental constraints)
         # So need to change directory and back here (WILL CAUSE MAYHEM IF NMSPEC
         # CRASHES, KEEP AN EYE ON THIS)
-        with chdir("/home/565/bff565/projects/pysusyMSSM/NMSSMTools_3.2.3/main"):
+        with chdir(self.nmspecdir):
             nmspec.spec(self.infile, self.spectr, self.decay, self.omega)
     
     def checkoutput(self):

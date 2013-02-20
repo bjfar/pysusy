@@ -45,6 +45,26 @@ def halfnormallower(x,limit,sigma):
    tau = 1/sigma**2
    return pymc.normal_like(x,limit,tau)#-pymc.normal_like(mean,mean,tau) #removed this scaling factor, is irrelevant
 
+# Double gaussian! Using to model seperate values for upper and lower
+# uncertainties. Be careful using this; if some source gives seperate upper 
+# and lower uncertainties for a quantity it may signal a rather non-gaussian
+# underlying likelihood, which this function may approximate poorly.
+def logdoublenormal(x,mean,sigmaP,sigmaM):
+    #mean is measured value
+    #x is computed theory value
+    #sigmaP and sigmaM are distances from mean to upper and lower 1 sigma (68%)
+    #confidence limits.
+    if x==None: return -1e300
+    if x>=mean:
+        tauP = 1/sigmaP**2
+        #need to remove the normalisation factor so we get the same normalisation
+        #for each half of the likelihood.
+        loglike = pymc.normal_like(x,mean,tauP) - pymc.normal_like(mean,mean,tauP)
+    if x<mean:
+        tauM = 1/sigmaM**2
+        loglike = pymc.normal_like(x,mean,tauM) - pymc.normal_like(mean,mean,tauM)
+    return loglike
+    
 def variablemean(likefunc,meanfunc,observables,sigmafunc=0,extra=[]): #observables should be a tuple containing the 'observables' objects which contain values needed to compute the variable mean
    """Master likelihood function generator for variable likelihood functions
    This function is used to create likelihood functions which vary from point

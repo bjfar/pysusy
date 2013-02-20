@@ -125,7 +125,8 @@ class Master():
         cfg = ConfigParser.RawConfigParser()
 
         #set default values
-        pysusyroot = '/home/565/bff565/projects/pysusyMSSM/pysusy3'
+        #pysusyroot = '/home/565/bff565/projects/pysusyMSSM/pysusy3'
+        pysusyroot = os.getcwd() #Assumes script was run from pysusy root! Might cause badness for queued jobs.
         defconfig = pysusyroot+'/config/general_defaultsNMSSM.cfg'
         print 'Reading default config file {0}'.format(defconfig)
         cfg.readfp(open(defconfig))                                     #before reading the real config file, read in the defaults (in case any new ones are missing from older config files)
@@ -250,7 +251,8 @@ detection rates will be computed"
                         omegaout = fdarkmatterout,
                         decayout = fdecayout, 
                         template = ftemplate,
-                        options = nmspecoptions)
+                        options = nmspecoptions,
+                        workdir = pysusyroot+'/wrappers')
 
         #==========PRIOR SETUP==========================================
         
@@ -259,7 +261,7 @@ detection rates will be computed"
         if cfg.getboolean('list','listmode')==False:
             #Check which model is in use and set options appropriately
             def setupCNMSSM():
-                print "Setting up prior for cNMSSM..."
+                print "Setting up prior for CNMSSM..."
                 #parameter/prior scan settings set here:
                 uselog = cfg.getboolean('prioroptions','uselog')
                 massprior = priors.logprior if uselog else priors.linear
@@ -270,7 +272,6 @@ detection rates will be computed"
                 TanBrange = cfg.get2tuple('prioroptions','TanBrange')
                 A0range = cfg.get2tuple('prioroptions','A0range')
                 lambdarange = cfg.get2tuple('prioroptions','lambdarange')
-                Akapparange = cfg.get2tuple('prioroptions','Akapparange')
                 #nuis par tuple values interpreted as mean and std of gaussian prior
                 Mtopmeanstd = cfg.get2tuple('prioroptions','Mtopmeanstd') 
                  
@@ -279,21 +280,20 @@ detection rates will be computed"
                                 ('TanB', priors.linear(*TanBrange)),
                                 ('A0',   priors.linear(*A0range)),
                                 ('lambda', priors.linear(*lambdarange)),
-                                ('Akappa', priors.linear(*Akapparange)),
                                 ('Mtop', priors.gaussian(*Mtopmeanstd)),   
                             ]
                 #=================SET PRIOR=================================
                 #----------(to be used by PyScanner)---------------------------
                 self.scanargs['prior'] = priors.genindepprior(priorslist)     
                 self.scanargs['parorder'] = ['M0','M12','TanB','A0',
-                                             'lambda','Akappa','Mtop']      
+                                             'lambda','Mtop']      
             def setupNMSSM10():
                 print "Setting up prior for NMSSM10..."
                 raise Exception("NOTE TO SELF: NMSSM10 not yet fully implemented")
             
             # Dictionary to select which model to set up (functions like a case
             # or switch statement)
-            casedict = { 'cNMSSM':  setupCNMSSM,
+            casedict = { 'CNMSSM':  setupCNMSSM,
                          'NMSSM10': setupNMSSM10,
                        }
             # Run the appropriate prior setup as chosen in the config file
@@ -302,13 +302,15 @@ detection rates will be computed"
                 casedict[model]()   # Runs the selected setup function
             except KeyError as err:
                 msg = "{0} -- ERROR! Model chosen in config file (prioroptions: \
-model) is not implemented. Please check the name is correct (only cNMSSM and \
+model) is not implemented. Please check the name is correct (only CNMSSM and \
 NMSSM10 are currently valid".format(err.message)
                 raise KeyError(msg)
         #==========LIKELIHOOD FUNCTION SETUP============================
     
         #----------Initialise likelihood calculator---------------------
-        LFCalc = LFmod.LikeFuncCalculator(configfile)                   #Initialise likelihood calculator object, according to options set in configfile
+        #...according to options set in configfile
+        defconfig = pysusyroot+'/config/general_defaultsMSSM.cfg' #defaults
+        LFCalc = LFmod.LikeFuncCalculator(configfile,defconfig)
         
         #----------Define function to perform likelihood calculation----
         def pyscannerlikefunc(paramvector):
@@ -332,13 +334,15 @@ NMSSM10 are currently valid".format(err.message)
             """
             
             #----------Run codes and collect observables----------------
-            obsdict = {}                                                #reset observable storage dictionary
-            timing = []                                                 #reset timing storage list
-            ti = time.time()                                            #initialise ti
+            obsdict = {}        #reset observable storage dictionary
+            timing = []         #reset timing storage list
+            ti = time.time()    #initialise ti
             
-            nmspec.writeinput(paramvector)                              #write the new SLHA input file, with values modified according to those in 'paramvector'
-            nmspec.run()                                                #Execute nmspec main function
-            errorsQ = nmspec.checkoutput()                              #Check if any errors occured
+            # Write the new SLHA input file, with values modified according to
+            # those in 'paramvector'
+            nmspec.writeinput(paramvector)  
+            nmspec.run()    #Execute nmspec main function
+            errorsQ = nmspec.checkoutput()  #Check if any errors occured
             if errorsQ[0]==1:   # code 1 indicates problem with spectrum output
                 raise BadModelPointError('nmspec: Problem with spectrum found! \
 ({0})'.format(errorsQ[1]))
@@ -347,19 +351,20 @@ NMSSM10 are currently valid".format(err.message)
 ({0})'.format(errorsQ[1]))
             #else continue as normal  
             
-            obsdict['spectrum'] = nmspec.getspecobs()                   #add nmspec spectrum observables to obsdict
+            # Add nmspec spectrum observables to obsdict
+            obsdict['spectrum'] = nmspec.getspecobs() 
             obsdict['darkmatter'] = nmspec.getomegaobs()
             obsdict['decay'] = {}      #nmspec.getdecayobs()
-            for key, value in obsdict['spectrum'].items(): print key,':',value
-            print ''
-            for key, value in obsdict['darkmatter'].items(): print key,':',value
-                 
-            tf = time.time(); timing += [(tf - ti)*1000]; ti = tf       #compute time since ti and reset ti
+            
+            # Compute time since ti and reset ti
+            tf = time.time(); timing += [(tf - ti)*1000]; ti = tf       
             
             if self.printing: 
-                print obsdict['spectrum']
-                #print obsdict['darkmatter']
-                #print obsdict['decay']
+                for key, value in obsdict['spectrum'].items(): 
+                    print key,':',value
+                print ''
+                for key, value in obsdict['darkmatter'].items(): 
+                    print key,':',value
                 print 'timing (ms):', timing
         
             #---------Compute likelihoods-------------------------------
@@ -367,7 +372,9 @@ NMSSM10 are currently valid".format(err.message)
             
             #LogL = -1e300
             #likedict = {}
-            quit()
+            for key, value in likedict.items(): 
+                    print key,':',value
+
             return LogL, likedict, obsdict, timing
             
         #================SET LIKELIHOOD FUNCTION========================

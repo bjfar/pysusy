@@ -39,10 +39,10 @@ SLHAdict['Akappa'   ]   =   ('EXTPAR',      [64]     )  #at scale GUT
 
 #BLOCK MASS
 #SLHAdict['MW'       ]   =   ('MASS',        [24]    )
-SLHAdict['Mh0'      ]   =   ('MASS',        [25]    )   # lightest neutral scalar
-SLHAdict['MH0'      ]   =   ('MASS',        [35]    )   # second neutral scalar
+SLHAdict['MH1'      ]   =   ('MASS',        [25]    )   # lightest neutral scalar
+SLHAdict['MH2'      ]   =   ('MASS',        [35]    )   # second neutral scalar
 SLHAdict['MH3'      ]   =   ('MASS',        [35]    )   # third neutral scalar
-SLHAdict['MA0'      ]   =   ('MASS',        [36]    )   # lightest pseudoscalar
+SLHAdict['MA1'      ]   =   ('MASS',        [36]    )   # lightest pseudoscalar
 SLHAdict['MA2'      ]   =   ('MASS',        [36]    )   # second pseudoscalar
 SLHAdict['MH+'      ]   =   ('MASS',        [37]    )   # charged Higgs
 SLHAdict['MsdownL'  ]   =   ('MASS',        [1000001])
@@ -338,7 +338,7 @@ SLHAdict['MbR^2_QGUT']  =   ('MSOFTGUT',    [49]    ) # M_bR^2
 #BLOCK NMSSMRUNGUT (NMSSM SPECIFIC PARAMETERS AT THE GUT SCALE)
 SLHAdict['lambda_QGUT'] =   ('NMSSMRUNGUT', [1]     ) # LAMBDA(MGUT,DR_bar)
 SLHAdict['kappa_QGUT']  =   ('NMSSMRUNGUT', [2]     ) # KAPPA(MGUT,DR_bar)
-SLHAdict['Alambda_QGUT']=  ('NMSSMRUNGUT', [3]     ) # ALAMBDA
+SLHAdict['Alambda_QGUT']=   ('NMSSMRUNGUT', [3]     ) # ALAMBDA
 SLHAdict['Akappa_QGUT'] =   ('NMSSMRUNGUT', [4]     ) # AKAPPA
 SLHAdict['mueff_QGUT']  =   ('NMSSMRUNGUT', [5]     ) # MUEFF
 SLHAdict['XIF_QGUT']    =   ('NMSSMRUNGUT', [6]     ) # XIF

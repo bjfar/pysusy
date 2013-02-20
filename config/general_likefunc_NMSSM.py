@@ -42,7 +42,11 @@ def LHCbBsmumulikefunc(LogLcurve,minX,maxX):
       if Bsmumu<minX: Bsmumu=minX
       if Bsmumu>maxX: Bsmumu=maxX
       DLogL = LogLcurve.__call__(Bsmumu) # Get logl value
-      return DLogL
+      # The LHCb plot claims the y axis is Delta LogL, but this makes no sense
+      # because it is upside down. I believe it is actually -2*LogL since this
+      # seems to give the confidence intervals they claim, so we must convert
+      # this to an ACTUAL log likelihood
+      return float(-0.5*DLogL) #also don't want this returned as a 1-element numpy array
          
    #return likelihood function
    return Bsmumulikefunc
@@ -157,7 +161,7 @@ class LikeFuncCalculator:
         # curve data
         #-----------------------------------------------------------------------
         #read in digitized curve (from suppl. material fig 11. 8 of 1211.2674 (LHCb))
-        rawdata = np.loadtxt(datadir+'/LHCbBsmumuDlogl.dat', unpack=False, delimiter=",")
+        rawdata = np.loadtxt(datadir+'/LHCbBsmumuDlogl.dat', unpack=False, delimiter=" ")
         #(data in units of [10^-9])
     
         rawdata = map(tuple,rawdata)    #we don't want a numpy array here, just a list of tuples
@@ -244,8 +248,8 @@ class LikeFuncCalculator:
                 # Just a rough guess at the measured mass of the SM-like Higgs.
                 # Replace this with a rigorous likelihood involving decay rates.
             
-            print mostSMlike, specdict['M{0}'.format(mostSMlike)], \
-                rgsqdiff[mostSMlike]
+            #print mostSMlike, specdict['M{0}'.format(mostSMlike)], \
+            #    rgsqdiff[mostSMlike]
                 
             #===============Flavour constraints=========================
             # Branching ratios:

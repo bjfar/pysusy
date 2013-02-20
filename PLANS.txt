@@ -1,0 +1,9 @@
+20 Feb 2013 - Getting weird errors in <>-.timing output file, occasional rows
+cut off and new ones begun. Pretty sure this is a result of multiple processes
+writing to the file simultaneously. Only way to fix this would be to implement
+a file locking system, or use mpi to send all timing output to (say) process 0 
+for writing to file. This is a pain to do, but should try to get around to it
+sometime. For the moment my analysis tools are designed to just skip such
+errornous lines, and they are rare so it isn't really a problem. Doesn't seem
+to be a problem with txt files or anything, but they are written by multinest
+so presumably it does something similar to the solution I described.

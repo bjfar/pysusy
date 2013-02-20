@@ -22,7 +22,7 @@ def logsteplower(x,limit):
 
 def lognormallike(x,mean,sigma):
    if x==None: return -1e300
-   tau = 1/sigma**2
+   tau = 1./sigma**2
    return pymc.normal_like(x,mean,tau)#-pymc.normal_like(mean,mean,tau) #removed this scaling factor, is irrelevant
 
 def logerfupper(x,limit,sigma):
@@ -35,14 +35,14 @@ def logerflower(x,limit,sigma):
 
 def halfnormalupper(x,limit,sigma):
    if x==None: return -1e300
-   if x<=limit: return log(1/sqrt(2*pi*sigma**2)) #this is the value of the max of the normal distribution. Note likelihood functions are unscaled here.
-   tau = 1/sigma**2
+   if x<=limit: return log(1./sqrt(2*pi*sigma**2)) #this is the value of the max of the normal distribution. Note likelihood functions are unscaled here.
+   tau = 1./sigma**2
    return pymc.normal_like(x,limit,tau)#-pymc.normal_like(mean,mean,tau) #removed this scaling factor, is irrelevant
 
 def halfnormallower(x,limit,sigma):
    if x==None: return -1e300
-   if x>=limit: return log(1/sqrt(2*pi*sigma**2)) #this is the value of the max of the normal distribution. Note likelihood functions are unscaled here.
-   tau = 1/sigma**2
+   if x>=limit: return log(1./sqrt(2*pi*sigma**2)) #this is the value of the max of the normal distribution. Note likelihood functions are unscaled here.
+   tau = 1./sigma**2
    return pymc.normal_like(x,limit,tau)#-pymc.normal_like(mean,mean,tau) #removed this scaling factor, is irrelevant
 
 # Double gaussian! Using to model seperate values for upper and lower
@@ -56,12 +56,12 @@ def logdoublenormal(x,mean,sigmaP,sigmaM):
     #confidence limits.
     if x==None: return -1e300
     if x>=mean:
-        tauP = 1/sigmaP**2
+        tauP = 1./sigmaP**2
         #need to remove the normalisation factor so we get the same normalisation
         #for each half of the likelihood.
         loglike = pymc.normal_like(x,mean,tauP) - pymc.normal_like(mean,mean,tauP)
     if x<mean:
-        tauM = 1/sigmaM**2
+        tauM = 1./sigmaM**2
         loglike = pymc.normal_like(x,mean,tauM) - pymc.normal_like(mean,mean,tauM)
     return loglike
     

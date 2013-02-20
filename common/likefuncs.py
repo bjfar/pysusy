@@ -48,7 +48,9 @@ def halfnormallower(x,limit,sigma):
 # Double gaussian! Using to model seperate values for upper and lower
 # uncertainties. Be careful using this; if some source gives seperate upper 
 # and lower uncertainties for a quantity it may signal a rather non-gaussian
-# underlying likelihood, which this function may approximate poorly.
+# underlying likelihood, which this function may approximate poorly. The bigger
+# the difference b/w the upper and lower sigmas, the worse this model likelihood
+# will be, generally speaking.
 def logdoublenormal(x,mean,sigmaP,sigmaM):
     #mean is measured value
     #x is computed theory value

@@ -20,6 +20,32 @@ def squarklikefunc(smassIN,nmassIN):    #common likelihood function for remainin
         nmass = np.abs(nmassIN)
         return LFs.logsteplower(x=smass, limit=97 if smass-nmass>10 else 44)
 
+#LHCb Bs->mu+mu- profile log-likelihood curve 
+def LHCbBsmumulikefunc(LogLcurve,minX,maxX):    
+   """
+   Keyword Args:
+   LogLcurve - function which returns the LHCb Delta LogL value for a given
+      theory prediction.
+   minX - minimum extent of LogL curve in Bsmumu ('x' axis)
+   maxX - maximum extent of LogL curve in Bsmumu ('x' axis)
+   """
+   def Bsmumulikefunc(Bsmumu):
+      """Computes the log-likelihood value for a given BR(Bs->mumu) value.
+      Bsmumu - predicted value of branching ratio. This function is just a 
+      wrapper around the interpolating function 'LogLcurve' to deal with 
+      predictions outside the interpolating range, and with unit conversions.
+      """
+      # Curve defined in [10^-9] units, must convert theory value to match 
+      Bsmumu=(10**9)*Bsmumu 
+      # Deal with theory values outside the range covered by the LogL curve by
+      # setting them to the values on the limits of the range
+      if Bsmumu<minX: Bsmumu=minX
+      if Bsmumu>maxX: Bsmumu=maxX
+      DLogL = LogLcurve.__call__(Bsmumu) # Get logl value
+      return DLogL
+         
+   #return likelihood function
+   return Bsmumulikefunc
 #==========================================================
 # "Effective" priors
 #==========================================================
@@ -97,6 +123,7 @@ class LikeFuncCalculator:
         #observables options
         #useHiggs            = cfg.getboolean('obsoptions', 'useHiggs')
         useLHCHiggs         = cfg.getboolean('obsoptions', 'useLHCHiggs')
+        useBdecays          = cfg.getboolean('obsoptions', 'useBdecays')
         #useDMdirect         = cfg.getboolean('obsoptions', 'useDMdirect')
         centralreliclimit   = cfg.getboolean('obsoptions', 'centralreliclimit')
         #program options
@@ -122,10 +149,26 @@ class LikeFuncCalculator:
         # Construction of numerical likelihood functions from data files,
         # etc.
         
+        #-----------------------------------------------------------------------
+        # Read in LHCb loglikelihood curve for BR(Bs->mu+mu-) from digitized 
+        # curve data
+        #-----------------------------------------------------------------------
+        #read in digitized curve (from suppl. material fig 11. 8 of 1211.2674 (LHCb))
+        rawdata = np.loadtxt(pysusyroot+'/data/Bsmumu-1110.2411-fig8.csv', unpack=False, delimiter=",") #open data table file 
+        #(data in units of [10^-9])
+    
+        rawdata = map(tuple,rawdata)    #we don't want a numpy array here, just a list of tuples
+        finaldata=np.array(rawdata)
+       
+        BsmumuLogLcurve = interp.interp1d(finaldata[:,0],finaldata[:,1],kind='linear')
+        # find out what the range covered by the data is
+        minBR = min(finaldata[:,0])
+        maxBR = max(finaldata[:,0])
+        
         #===============================================================
         
         #-----------------------------------------------------------------------
-        # Component likelihood definitions
+        # Build likelihood definitions
         #-----------------------------------------------------------------------
         
         #---relic density-----------------------------------------------
@@ -134,7 +177,11 @@ class LikeFuncCalculator:
             omegalikefunc=LFs.lognormallike          
         else:
             #(assumes neutralino relic density < dark matter relic density)
-            omegalikefunc=LFs.logerfupper                          
+            omegalikefunc=LFs.logerfupper  
+        
+        #--Bs -> mu+ mu- -----------------------------------------------
+        #From LHCb data 
+        Bsmumulikefunc = LHCbBsmumulikefunc(BsmumuLogLcurve,minBR,maxBR) 
         
         #=======================================================================
         # COMPUTE GLOBAL LIKELIHOOD FUNCTION 
@@ -199,31 +246,44 @@ class LikeFuncCalculator:
                 
             #===============Flavour constraints=========================
             # Branching ratios:
+            # Switch on/off using "useBdecays" config option.
             # "Theory error" taken to be the larger of the upper/lower errors
-            # returned by nmspec.
+            # returned by nmspec. ->UPDATE: now using LFs.logdoublenormal,
+            # models upper and lower errors by seperate Gaussians.
             
             # BF(b->s gamma) (i.e. B_u/B_d -> X_s gamma)
-            bsgtherr = max(specdict['bsgmo+eth']-specdict['bsgmo'],
-                           specdict['bsgmo']-specdict['bsgmo-eth'])
-            likedict['bsgmo'] = (LFs.lognormallike(x=specdict['bsgmo'],
-                mean=3.55e-4, sigma=sqrt((0.26e-4)**2+(0.09e-4)**2+bsgtherr**2)
-                                                                     , True)
+            bsgexperr2 = (0.26e-4)**2+(0.09e-4)**2
+            bsguperr2 = bsgexperr2+(specdict['bsgmo+eth']-specdict['bsgmo'])**2
+            bsglwerr2 = bsgexperr2+(specdict['bsgmo-eth']-specdict['bsgmo'])**2              
+            likedict['bsgmo'] = (LFs.logdoublenormal(x=specdict['bsgmo'],
+                mean=3.55e-4, sigmaP=sqrt(bsguperr2), sigmaM=sqrt(bsglwerr2))
+                                                                  , useBdecays)
             #HFAG, arXiv:1010.1589 [hep-ex], Table 129 (Average)
             # 0.09e-4 contribution added in accordance with newer HFAG edition:
             #HFAG, arXiv:1207.1158 [hep-ex], pg 203. (i.e. basically unchanged)
 
-            #BR(B+ -> tau+ + nu_tau)
-            btaunutherr = max(specdict['B+taunu+eth']-specdict['B+taunu'],
-                           specdict['B+taunu']-specdict['B+taunu-eth'])
-            likedict['B+taunu'] = (LFs.lognormallike(x=specdict['B+taunu'],
-                mean=1.67e-4, sigma=sqrt((0.3e-4)**2+btaunutherr**2), True)
+            # BR(B+ -> tau+ + nu_tau)
+            btaunuexperr2 = (0.3e-4)**2
+            btaunuuperr2 = btaunuexperr2+(specdict['B+taunu+eth']-specdict['B+taunu'])**2
+            btaunulwerr2 = btaunuexperr2+(specdict['B+taunu-eth']-specdict['B+taunu'])**2              
+            likedict['B+taunu'] = (LFs.logdoublenormal(x=specdict['B+taunu'],
+                mean=1.67e-4, sigmaP=sqrt(btaunuuperr2), sigmaM=sqrt(btaunulwerr2))
+                                                                  , useBdecays)
             #HFAG 1010.1589v3 (updated 6 Sep 2011), retrieved 12 Oct 2011
             #Table 127, pg 180
             #HFAG, arXiv:1207.1158 [hep-ex], pg 204. table 144
             #(basically unchanged from 2010 data, smaller uncertainity 
             #(0.39->0.3), mean unchanged.
-
             
+            # BR(Bs -> mu+ mu-)
+            # See comments where BsmumuLogLcurve is created from data files
+            likedict['bmumu'] = (Bsmumulikefunc(specdict['bmumu']), useBdecays)
+            #Folding theory error into this properly would be hard... need to
+            #convolve it in for every point. Can't think of a better way.
+            #Otherwise need to settle on something constant that can be
+            #computed at the beginning of the run.
+            #specdict['bmumu+eth']
+            #specdict['bmumu-eth']  
             
             #===============GLOBAL LOG LIKELIHOOD=======================
             LogL = sum( logl for logl,uselike in likedict.itervalues() if uselike )

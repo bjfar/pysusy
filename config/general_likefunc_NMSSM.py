@@ -114,12 +114,15 @@ class LikeFuncCalculator:
         
         #need to know this for a few spectrum generator specific observables
         specgen = cfg.get('progoptions','spectrumgenerator') 
-        
+        #user must tell likelihood calculator where to find the data files
+        #needed to build the likelihood functions.
+        datadir = cfg.get('obsoptions','datadir') 
+
         #--------------------------------------------------------------
         # Load options (whether to exclude some observables from scan; 
         # likelihood values still computed and output just not used)
         #--------------------------------------------------------------
-
+        
         #observables options
         #useHiggs            = cfg.getboolean('obsoptions', 'useHiggs')
         useLHCHiggs         = cfg.getboolean('obsoptions', 'useLHCHiggs')
@@ -154,7 +157,7 @@ class LikeFuncCalculator:
         # curve data
         #-----------------------------------------------------------------------
         #read in digitized curve (from suppl. material fig 11. 8 of 1211.2674 (LHCb))
-        rawdata = np.loadtxt(pysusyroot+'/data/Bsmumu-1110.2411-fig8.csv', unpack=False, delimiter=",") #open data table file 
+        rawdata = np.loadtxt(datadir+'/LHCbBsmumuDlogl.dat', unpack=False, delimiter=",")
         #(data in units of [10^-9])
     
         rawdata = map(tuple,rawdata)    #we don't want a numpy array here, just a list of tuples

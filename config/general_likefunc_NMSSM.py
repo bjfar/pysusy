@@ -75,6 +75,141 @@ def LHCbBsmumulikefunc(LogLcurve,minX,maxX):
 
 # DOYOUN'S NMSSM TUNING PRIOR GOES HERE
 
+# log-Jacobian for the transformation T^l_{k,ms} (see Eq. 3.9 of Doyoun's notes)
+def logJew(l,k,Al,Ak,s,t,mHu2,mHd2,MZ,g1,g2):
+    """Effective prior factor for implementing naturalness prior for CNMSSM.
+    Contributes a term to the likelihood.
+    Note: This part computes the contribution due to switching m_s^2 and kappa
+    for M_z^2 and tan(beta) at the EW scale.
+    
+    Args:
+    The following parameters are all evaluated at low energy.
+    l - lambda
+    k - kappa
+    Al - A_lambda
+    Ak - A_kappa
+    s - <S>, NMSSM singlet VEV 
+    t - tan(beta)
+    mHu2 - up type Higgs doublet mass
+    mHd2 - down type Higgs doublet mass
+    MZ - Z mass
+    g1 - U(1) gauge coupling
+    g2 - SU(2) gauge coupling
+    """
+    
+    #define shorthand variables (see Doyoun's notes, equations 2.18, 2.21, 2.23)
+    s2b = np.sin(2*np.arctan(t))   #sin(2*beta)
+    gbar2 = g1**2 + g2**2          #sum of squares of U1 and SU2 gauge couplings 
+    MZ2 = MZ**2                    #Z mass squared
+    b1 = -l/s
+    b2 = 1./(2*l*s*s) * 2*t/(t**2-1)**2 * (mHu2 - mHd2)
+    b3 = -1./(4*l*s*s)
+    e1 = (2*l*s*s2b - Al - 2*k*s)/s**2
+    e2 = -(1-t**2)/(t*(1+t**2)) * (Al + k*s)/s
+    e3 = -l*s2b/(gbar2 * s*s)
+    f1 = -(4*k**2*s + k*Ak + 4*MZ2/(gbar2 * s*s) * t/(1+t**2) * l*Al)
+    f2 = 4*MZ2/(gbar2*s*s) * (1-t**2)/(1+t**2)**2 * l*s*(Al + k*s)
+    f3 = -(2*l**2/gbar2 - 4*l/(gbar2*s) * t/(1+t**2) * (Al + k*s))
+    M = [[b1, e1, f1],
+         [b2, e2, f2],
+         [b3, e3, f3]]
+    Jew = (1./b1) * np.linalg.det(M)     
+    return np.log(np.abs(Jew)) #log-likelihood contribution
+
+def logJrge(s,t,mHu2,mHd2,l ,k ,yt ,g1 ,g2 ,g3,
+                          l0,k0,yt0,g10,g20,g30):
+    """Effective prior factor for implementing naturalness prior for CNMSSM.
+    Contributes a term to the likelihood.
+    Note: This part computes the contribution due to 1-loop RGE running of
+    m_s^2 and kappa from the low scale (SUSY~EW) to high scale (GUT). Don't
+    need to bother with this if RGE running is only going to SUSY scale, since
+    not very much change occurs (and this function assumes SUSY~EW, since we
+    do not actually get EW values for parameters from NMSSMTools, only SUSY
+    scalw values.
+    
+    **only valid for l,k up to 0.3. Perhaps compute for reference only - if
+    factor gets large then we know 
+    
+    Args:
+    s - <S>, NMSSM singlet VEV 
+    t - tan(beta)
+    mHu2 - up type Higgs doublet mass
+    mHd2 - down type Higgs doublet mass
+    l - lambda
+    k - kappa
+    yt - top yukawa coupling
+    g1 - U(1) gauge coupling
+    g2 - SU(2) gauge coupling
+    g3 - SU(3) gauge coupling
+    
+    Note: suffix "0" indicates the GUT version of the parameter; EW/SUSY scale
+    version is assumed otherwise.
+    """
+    
+    #b1 and b2 defined identically as in Jew factor (see also Doyoun's notes, 
+    # equations 2.18, 2.21, 2.23)
+    b1 = -l/s
+    b2 = 1./(2*l*s*s) * 2*t/(t**2-1)**2 * (mHu2 - mHd2)
+    b3 = -1./(4*l*s*s)
+    
+    # Doyoun used a_i = g_i^2/4pi in his notation, but since 4pi's cancel anyway
+    # in the ratios I have just directly used the g_i's (and squared them).
+    rl = l/l0
+    rk = k/k0
+    ryt = yt/yt0
+    ra1 = (g1/g10)**2
+    ra2 = (g2/g20)**2
+    ra3 = (g3/g30)**2
+    
+    print 'rl', rl
+    print 'rk', rk
+    print 'ryt', ryt
+    print 'ra1', ra1
+    print 'ra2', ra2
+    print 'ra3', ra3
+    print 'b1', b1
+    print 'b2', b2
+    print 'b3', b3
+    
+    """Trying to avoid overflows: work in log space instead
+    try:
+        A = rl**(4./3.) * \
+            rk**(-4./9.) * \
+            ryt**(-2./3.) * \
+            ra1**(5./(27.*b1)) * \
+            ra2**(1./b2) * \
+            ra3**(-16./(9.*b3))
+        Jrge = (k0**3/k) * A**6
+        logJrge = np.log(np.abs(Jrge))
+    except OverflowError:
+        #if we get an overflow presumably a very small or very large number has
+        #been encountered. If small, this gives a big
+        #likelihood penalisation (unless it would miraculously be cancelled
+        #elsewhere in the expression) so we assume this is a super fine-tuned
+        #point and assign a big likelihood penalty.
+        #if the number is very large I guess we are screwed because we can't
+        #compute what it is. I don't think "natural" points should receive a
+        #giant likelihood bonus like this though, so we will always assume this
+        #error means the point is no good.
+        logJrge = -999.
+    """
+    
+    logA =  (4./3.) * np.log(rl) \
+          - (4./9.) * np.log(rk) \
+          - (2./3.) * np.log(ryt) \
+          + (5./(27.*b1)) * np.log(ra1) \
+          + (1./b2) * np.log(ra2) \
+          - (16./(9.*b3)) * np.log(ra3)
+    logJrge = 3*np.log(k0/k) + 6*logA
+    # no abs should be necessary anywhere as the ratios should all be positive
+    # numbers, I believe.  
+    
+    print 'logJrge', logJrge
+    print ''
+    return logJrge #log-likelihood contribution
+
+
+
 #==========================================================
 # BUILD LIKELIHOOD FUNCTION CALCULATOR CLASS
 #==========================================================
@@ -142,10 +277,19 @@ class LikeFuncCalculator:
         #useMW               = cfg.getboolean('likefunc', 'useMW')
         #usedeltarho         = cfg.getboolean('likefunc', 'usedeltarho')
         useomegah2          = cfg.getboolean('likefunc', 'useomegah2')
-        #usedeltaamu         = cfg.getboolean('likefunc', 'usedeltaamu')
+        usedeltaamu         = cfg.getboolean('likefunc', 'usedeltaamu')
         #useDSL              = cfg.getboolean('likefunc', 'useDSL')
         #prior options
-        #useCCRprior         = ('CCRprior'==cfg.get('prioroptions', 'effprior'))
+        prior = cfg.get('prioroptions', 'effprior')
+        if prior==None:
+            useJew = False
+            useJrge = False
+        if prior=='EW' or prior=='T1':  # set the appropriate prior factors to be used
+            useJew = True
+            useJrge = False
+        if prior=='EW+RGE':
+            useJew = True
+            useJrge = True
         #if cfg.getboolean('prioroptions', 'uselog') and useCCRprior:
         #    raise ValueError('Attempted to activate CCR prior with log prior!\
 #Must use flat prior instead! Please adjust options config file.')
@@ -214,15 +358,35 @@ class LikeFuncCalculator:
             #   DEFINE LIKELIHOOD CONTRIBUTIONS
             #===============================================================
             #-----------MAIN CONTRIBUTORS TO LIKELIHOOD-----------------
-
+            
+            # delta(a_mu)
+            likedict['deltaamu'] = (LFs.lognormallike(x=specdict['deltaamu'], 
+                mean=33.53e-10, sigma=8.24e-10), usedeltaamu)
+                #1106.1315v1, Table 10, Solution B (most conservative)
+            
             #=====Electroweak precision, RELIC DENSITY and (g-2)_mu=============
             if usemicrOmegas:
                 #Dark matter relic density
                 likedict['omegah2'] = (omegalikefunc(darkdict['omegah2'], \
-                    0.1123, sqrt((0.0035)**2+(0.10*0.1123)**2)), useomegah2)         
-                    #Jan 2010, 1001.4538v2, page 3 table 1 (WMAP + BAO + H0 mean)
-                    #theory (second component) uncertainty stolen from 1107.1715,
-                    #need proper source
+                    0.1186, sqrt((0.0031)**2+(0.10*0.1186)**2)), useomegah2)         
+                    # 2013 Planck data release (http://arxiv.org/abs/1303.5076)
+                    # From table 2. Three numbers are relevant:
+                    # Best fit, 68% confidence intercal
+                    # 0.12029,     0.1196 +/- 0.0031  : Planck temp. data
+                    # 0.11805,     0.1186 +/- 0.0031  :    + Planck lensing data
+                    # 0.12038,     0.1199 +/- 0.0027  :    + WMAP low multipole
+                    #                                 :      polarisation data
+                    # Giving our somewhat arbitrary 10% extra theory uncertainty
+                    # it doesn't matter which we choose (they are all within 2%
+                    # of each other). Even the WMAP result (0.1123 +/- 0.0035) is
+                    # only about 6% different from the central Planck result. So
+                    # let's just use the "Planck only" data.
+                    #
+                    # old WMAP reference:
+                    # 2010, 1001.4538v2, page 3 table 1 (WMAP + BAO + H0 mean)
+                    # theory (second component) uncertainty stolen from 
+                    # 1107.1715, need proper source.
+
             
             #=====Higgs constraints=============================================
             # We first need to find out which of the NMSSM Higgses is SM-like
@@ -230,7 +394,7 @@ class LikeFuncCalculator:
             # average to 1? Crude, but good enough for first quick scan.
             
             Higgses = ['H1','H2','H3','A1','A2'] # Must match blockmap
-            #Compute summed squared difference of couplings from 1
+            # Compute summed squared difference of couplings from 1
             rgsqdiff = {}
             for Higgs in Higgses:
                 rgsqdiff[Higgs] = \
@@ -239,7 +403,7 @@ class LikeFuncCalculator:
                   + (specdict['rg_{0}_WZ'.format(Higgs)] - 1)**2 \
                   + (specdict['rg_{0}_g'.format(Higgs)] - 1)**2 \
                   + (specdict['rg_{0}_a'.format(Higgs)] - 1)**2 \
-            #Get key of entry of rqsqdiff containing the min. squared difference
+            # Get key of entry of rqsqdiff containing the min squared difference
             mostSMlike = min(rgsqdiff, key=rgsqdiff.get)
                 
             likedict['mh_SMlike'] = (LFs.lognormallike(\
@@ -265,9 +429,9 @@ class LikeFuncCalculator:
             likedict['bsgmo'] = (LFs.logdoublenormal(x=specdict['bsgmo'],
                 mean=3.55e-4, sigmaP=sqrt(bsguperr2), sigmaM=sqrt(bsglwerr2))
                                                                   , useBdecays)
-            #HFAG, arXiv:1010.1589 [hep-ex], Table 129 (Average)
+            # HFAG, arXiv:1010.1589 [hep-ex], Table 129 (Average)
             # 0.09e-4 contribution added in accordance with newer HFAG edition:
-            #HFAG, arXiv:1207.1158 [hep-ex], pg 203. (i.e. basically unchanged)
+            # HFAG, arXiv:1207.1158 [hep-ex], pg 203. (i.e. basically unchanged)
 
             # BR(B+ -> tau+ + nu_tau)
             btaunuexperr2 = (0.3e-4)**2
@@ -276,11 +440,11 @@ class LikeFuncCalculator:
             likedict['B+taunu'] = (LFs.logdoublenormal(x=specdict['B+taunu'],
                 mean=1.67e-4, sigmaP=sqrt(btaunuuperr2), sigmaM=sqrt(btaunulwerr2))
                                                                   , useBdecays)
-            #HFAG 1010.1589v3 (updated 6 Sep 2011), retrieved 12 Oct 2011
-            #Table 127, pg 180
-            #HFAG, arXiv:1207.1158 [hep-ex], pg 204. table 144
-            #(basically unchanged from 2010 data, smaller uncertainity 
-            #(0.39->0.3), mean unchanged.
+            # HFAG 1010.1589v3 (updated 6 Sep 2011), retrieved 12 Oct 2011
+            # Table 127, pg 180
+            # HFAG, arXiv:1207.1158 [hep-ex], pg 204. table 144
+            # (basically unchanged from 2010 data, smaller uncertainity 
+            # (0.39->0.3), mean unchanged.
             
             # BR(Bs -> mu+ mu-)
             # See comments where BsmumuLogLcurve is created from data files
@@ -290,7 +454,51 @@ class LikeFuncCalculator:
             #Otherwise need to settle on something constant that can be
             #computed at the beginning of the run.
             #specdict['bmumu+eth']
-            #specdict['bmumu-eth']  
+            #specdict['bmumu-eth'] 
+            
+            
+            
+            #--------Effective prior factor-------------------------------------
+            likedict['logJew'] = (\
+                                logJew(specdict['lambda_Qsusy'],
+                                       specdict['kappa_Qsusy'],
+                                       specdict['Alambda_Qsusy'],
+                                       specdict['Akappa_Qsusy'],
+                                       specdict['mueff_Qsusy']/
+                                           specdict['lambda_Qsusy'], # <S>=mueff/lambda
+                                       specdict['TanB'],
+                                       specdict['MHu^2_Qsusy'],
+                                       specdict['MHd^2_Qsusy'],
+                                       specdict['MZ'],
+                                       specdict['g`_Qsusy'],
+                                       specdict['g2_Qsusy'])                    
+                    , False)
+            likedict['logJrge'] = (\
+                               logJrge(specdict['mueff_Qsusy']/
+                                           specdict['lambda_Qsusy'], # <S>=mueff/lambda
+                                       specdict['TanB'],
+                                       specdict['MHu^2_Qsusy'],
+                                       specdict['MHd^2_Qsusy'],
+                                       specdict['lambda_Qsusy'],
+                                       specdict['kappa_Qsusy'],
+                                       specdict['yt_Qsusy'],
+                                       specdict['g`_Qsusy'],
+                                       specdict['g2_Qsusy'],
+                                       specdict['g3_Qsusy'],
+                                       specdict['lambda_QGUT'],
+                                       specdict['kappa_QGUT'],
+                                       specdict['yt_QGUT'],
+                                       specdict['g`_QGUT'],
+                                       specdict['g2_QGUT'],
+                                       specdict['g3_QGUT'])                    
+                    , False)
+                    
+            # Total combined effective log prior factor (for easy removal during
+            # analysis)
+            effprior = 0.
+            if useJew:  effprior += likedict['logJew'][0]
+            if useJrge: effprior += likedict['logJrge'][0]
+            likedict['effprior'] = (effprior, True)
             
             #===============GLOBAL LOG LIKELIHOOD=======================
             LogL = sum( logl for logl,uselike in likedict.itervalues() if uselike )

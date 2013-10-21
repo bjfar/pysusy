@@ -34,6 +34,7 @@ import os
 import sys
 import shutil
 import getopt
+import tarfile      #use for creating tar archives
 
 # Import PyScanner machinery
 import pyscanner.scanner as pyscan

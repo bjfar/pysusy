@@ -28,4 +28,4 @@ BLOCK MINPAR
 
 BLOCK EXTPAR
 	61	0.0e0		# LAMBDA at MSUSY
-	64	0.0e0   	# AKAPPA at MGUT (If =/= A0)
+#	64	0.0e0   	# AKAPPA at MGUT (If =/= A0)

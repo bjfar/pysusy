@@ -34,16 +34,41 @@ SLHAdict['sgnmu'    ]   =   ('MINPAR',      [4]     )
 SLHAdict['A0'       ]   =   ('MINPAR',      [5]     )   #at scale GUT
 
 #BLOCK EXTPAR
+#Note, not all of these are needed at once. See NMSSMTools examples for 
+#valid combinations for different settings (i.e. CNMSSM vs general NMSSM etc)
+#Note NOT COMPLETE! There are some entries I haven't gotten around to adding.
+# NMSSM extra couplings and trilinears
 SLHAdict['lambda'   ]   =   ('EXTPAR',      [61]     )  #at scale SUSY
+SLHAdict['kappa'    ]   =   ('EXTPAR',      [62]     )
+SLHAdict['Alambda'  ]   =   ('EXTPAR',      [63]     )
 SLHAdict['Akappa'   ]   =   ('EXTPAR',      [64]     )  #at scale GUT
+SLHAdict['mueff'    ]   =   ('EXTPAR',      [65]     )
+# Gaugino masses
+SLHAdict['M1'       ]   =   ('EXTPAR',      [1]     )
+SLHAdict['M2'       ]   =   ('EXTPAR',      [2]     )
+SLHAdict['M3'       ]   =   ('EXTPAR',      [3]     )
+# Trilinear couplings
+SLHAdict['AU3'      ]   =   ('EXTPAR',      [11]    )
+SLHAdict['AD3'      ]   =   ('EXTPAR',      [12]    )
+SLHAdict['AE3'      ]   =   ('EXTPAR',      [13]    )
+# Higgs masses squared
+SLHAdict['MHD^2'    ]   =   ('EXTPAR',      [21]    )
+SLHAdict['MHU^2'    ]   =   ('EXTPAR',      [22]    )
+# Sfermion masses
+SLHAdict['ML3'      ]   =   ('EXTPAR',      [33]    )
+SLHAdict['ME3'      ]   =   ('EXTPAR',      [36]    )
+SLHAdict['MQ3'      ]   =   ('EXTPAR',      [43]    )
+SLHAdict['MU3'      ]   =   ('EXTPAR',      [46]    )
+SLHAdict['MD3'      ]   =   ('EXTPAR',      [49]    )
+
 
 #BLOCK MASS
 #SLHAdict['MW'       ]   =   ('MASS',        [24]    )
 SLHAdict['MH1'      ]   =   ('MASS',        [25]    )   # lightest neutral scalar
 SLHAdict['MH2'      ]   =   ('MASS',        [35]    )   # second neutral scalar
-SLHAdict['MH3'      ]   =   ('MASS',        [35]    )   # third neutral scalar
+SLHAdict['MH3'      ]   =   ('MASS',        [45]    )   # third neutral scalar
 SLHAdict['MA1'      ]   =   ('MASS',        [36]    )   # lightest pseudoscalar
-SLHAdict['MA2'      ]   =   ('MASS',        [36]    )   # second pseudoscalar
+SLHAdict['MA2'      ]   =   ('MASS',        [46]    )   # second pseudoscalar
 SLHAdict['MH+'      ]   =   ('MASS',        [37]    )   # charged Higgs
 SLHAdict['MsdownL'  ]   =   ('MASS',        [1000001])
 SLHAdict['MsupL'    ]   =   ('MASS',        [1000002])
@@ -219,9 +244,9 @@ SLHAdict['rg_A2_a']     =   ('REDCOUP',     [5,5]   ) # Photons
 
 #BLOCK GAUGE 
 SLHAdict['Qsusy']       =   ('GAUGE',       ['blockvalue']) # (SUSY SCALE)
-SLHAdict['g`_Qsusy']    =   ('GAUGE',       [1]     ) # g1(Q,DR_bar)
-SLHAdict['g2_Qsusy']    =   ('GAUGE',       [2]     ) # g2(Q,DR_bar)
-SLHAdict['g3_Qsusy']    =   ('GAUGE',       [3]     ) # g3(Q,DR_bar)
+SLHAdict['g`_Qsusy']    =   ('GAUGE',       [1]     ) # g1=sqrt(5/3)*g` (Q,DR_bar)
+SLHAdict['g2_Qsusy']    =   ('GAUGE',       [2]     ) # g2=g (Q,DR_bar)
+SLHAdict['g3_Qsusy']    =   ('GAUGE',       [3]     ) # g3 (Q,DR_bar)
 #BLOCK YU
 SLHAdict['yt_Qsusy']    =   ('YU',          [3,3]   ) # HTOP(Q,DR_bar)
 #BLOCK YD
@@ -287,9 +312,9 @@ SLHAdict['M3H^2_Qsusy'] =   ('NMSSMRUN',    [11]    ) # M3H^2
 
 #BLOCK GAUGEGUT 
 SLHAdict['QGUT']        =   ('GAUGEGUT',    ['blockvalue']) # (GUT SCALE)
-SLHAdict['g`_QGUT']     =   ('GAUGEGUT',    [1]     ) # g1(MGUT,DR_bar)
-SLHAdict['g2_QGUT']     =   ('GAUGEGUT',    [2]     ) # g2(MGUT,DR_bar)
-SLHAdict['g3_QGUT']     =   ('GAUGEGUT',    [3]     ) # g3(MGUT,DR_bar)
+SLHAdict['g`_QGUT']     =   ('GAUGEGUT',    [1]     ) # g1=sqrt(5/3)*g` (MGUT,DR_bar)
+SLHAdict['g2_QGUT']     =   ('GAUGEGUT',    [2]     ) # g2=g (MGUT,DR_bar)
+SLHAdict['g3_QGUT']     =   ('GAUGEGUT',    [3]     ) # g3 (MGUT,DR_bar)
 #BLOCK YUGUT
 SLHAdict['yt_QGUT']     =   ('YUGUT',       [3,3]   ) # HTOP(MGUT,DR_bar)
 #BLOCK YDGUT
@@ -374,15 +399,39 @@ SLHAdict['tun_MGUT']    =   ('FINETUNING',  [21]    ) # PG=MGUT
 SLHAdict['tun_MAX']     =   ('FINETUNING',  [22]    ) # MAX
 SLHAdict['tun_IMAX']    =   ('FINETUNING',  [23]    ) # IMAX (index of max? probably no use to us)
 
+#BLOCK FINETUNING (note, I also hacked this blockname into the nmspec output)
+# FINE-TUNING parameter d(ln Mz^2)/d(ln PG^2)
+SLHAdict['tun_MHu']     =   ('FINETUNING',  [1]     ) # PG=MHU
+
+#BLOCK DERIVATIVES (new block I added to store tuning related derivatives)
+SLHAdict['dldMZ2']      =   ('DERIVATIVES', [1]     ) # d(lambda)/d(MZ^2) (D1Z)
+SLHAdict['dkdMZ2']      =   ('DERIVATIVES', [2]     ) # d(kappa) /d(MZ^2) (D2Z)
+SLHAdict['dtdMZ2']      =   ('DERIVATIVES', [3]     ) # d(tanb)  /d(MZ^2) (D3Z)
+SLHAdict['dldt']        =   ('DERIVATIVES', [4]     ) # d(lambda)/d(tanb) (D1T)
+SLHAdict['dkdt']        =   ('DERIVATIVES', [5]     ) # d(kappa) /d(tanb) (D2T)
+SLHAdict['dtdt']        =   ('DERIVATIVES', [6]     ) # d(tanb)  /d(tanb) (D3T)
+SLHAdict['dldmu']       =   ('DERIVATIVES', [7]     ) # d(lambda)/d(mu)   (D1M)
+SLHAdict['dkdmu']       =   ('DERIVATIVES', [8]     ) # d(kappa) /d(mu)   (D2M)
+SLHAdict['dtdmu']       =   ('DERIVATIVES', [9]     ) # d(tanb)  /d(mu)   (D3M)
+SLHAdict['dA1']         =   ('DERIVATIVES', [10]    ) # D2T*D3M-D2M*D3T
+SLHAdict['dA2']         =   ('DERIVATIVES', [11]    ) # D3T*D1M-D3M*D1T
+SLHAdict['dA3']         =   ('DERIVATIVES', [12]    ) # D1T*D2M-D1M*D2T
+SLHAdict['det123']      =   ('DERIVATIVES', [13]    ) # Determinant: A1*D1Z+A2*D2Z+A3*D3Z
+        
 #BLOCK RCROSSSECTIONS (note, hacked in this blockname too)
 # REDUCED CROSS SECTIONS AT LHC
+# NOTE! VBF/VH->H1->ZZ/WW and ggF->H1->ZZ/WW changed to just ZZ final state!
+# Pretty sure this is what was coming out previously anyway! Compute WW final
+# state version from the ZZ version by dividing out BR(H->ZZ)/BR(H->ZZ)_SM and 
+# multiplying in BR(H->WW)/BR(H->WW)_SM (the ggF->H production cross-section 
+# bit is the same!)
 # H1 production
 SLHAdict['VBF/VH->H1->tautau']  = ('RCROSSSECTIONS', [11] )
 SLHAdict['ggF->H1->tautau']     = ('RCROSSSECTIONS', [12] ) 
 SLHAdict['VBF/VH->H1->bb']      = ('RCROSSSECTIONS', [13] ) 
 SLHAdict['ttH->H1->bb']         = ('RCROSSSECTIONS', [14] )
-SLHAdict['VBF/VH->H1->ZZ/WW']   = ('RCROSSSECTIONS', [15] )
-SLHAdict['ggF->H1->ZZ/WW']      = ('RCROSSSECTIONS', [16] )
+SLHAdict['VBF/VH->H1->ZZ']      = ('RCROSSSECTIONS', [15] )
+SLHAdict['ggF->H1->ZZ']         = ('RCROSSSECTIONS', [16] )
 SLHAdict['VBF/VH->H1->aa']      = ('RCROSSSECTIONS', [17] )
 SLHAdict['ggF->H1->aa']         = ('RCROSSSECTIONS', [18] )
 # H2 production
@@ -390,8 +439,8 @@ SLHAdict['VBF/VH->H2->tautau']  = ('RCROSSSECTIONS', [21] )
 SLHAdict['ggF->H2->tautau']     = ('RCROSSSECTIONS', [22] ) 
 SLHAdict['VBF/VH->H2->bb']      = ('RCROSSSECTIONS', [23] ) 
 SLHAdict['ttH->H2->bb']         = ('RCROSSSECTIONS', [24] )
-SLHAdict['VBF/VH->H2->ZZ/WW']   = ('RCROSSSECTIONS', [25] )
-SLHAdict['ggF->H2->ZZ/WW']      = ('RCROSSSECTIONS', [26] )
+SLHAdict['VBF/VH->H2->ZZ']      = ('RCROSSSECTIONS', [25] )
+SLHAdict['ggF->H2->ZZ']         = ('RCROSSSECTIONS', [26] )
 SLHAdict['VBF/VH->H2->aa']      = ('RCROSSSECTIONS', [27] )
 SLHAdict['ggF->H2->aa']         = ('RCROSSSECTIONS', [28] )
 # H3 production
@@ -399,7 +448,27 @@ SLHAdict['VBF/VH->H3->tautau']  = ('RCROSSSECTIONS', [31] )
 SLHAdict['ggF->H3->tautau']     = ('RCROSSSECTIONS', [32] ) 
 SLHAdict['VBF/VH->H3->bb']      = ('RCROSSSECTIONS', [33] ) 
 SLHAdict['ttH->H3->bb']         = ('RCROSSSECTIONS', [34] )
-SLHAdict['VBF/VH->H3->ZZ/WW']   = ('RCROSSSECTIONS', [35] )
-SLHAdict['ggF->H3->ZZ/WW']      = ('RCROSSSECTIONS', [36] )
+SLHAdict['VBF/VH->H3->ZZ']      = ('RCROSSSECTIONS', [35] )
+SLHAdict['ggF->H3->ZZ']         = ('RCROSSSECTIONS', [36] )
 SLHAdict['VBF/VH->H3->aa']      = ('RCROSSSECTIONS', [37] )
 SLHAdict['ggF->H3->aa']         = ('RCROSSSECTIONS', [38] )
+
+#BLOCK BRANCHINGRATIOS (note, hacked in this blockname too)
+# Higgs branching ratios to SM particles
+# SM=Hi indicates which NMSSM Higgs mass was used (I think)
+SLHAdict['BR(h->tautau)_SM=H1'] = ('BRANCHINGRATIOS', [1] )
+SLHAdict['BR(h->bbar)_SM=H1']   = ('BRANCHINGRATIOS', [2] )
+SLHAdict['BR(h->ZZ)_SM=H1']     = ('BRANCHINGRATIOS', [3] )
+SLHAdict['BR(h->WW)_SM=H1']     = ('BRANCHINGRATIOS', [4] )
+SLHAdict['BR(h->aa)_SM=H1']     = ('BRANCHINGRATIOS', [5] )
+SLHAdict['BR(h->tautau)_SM=H2'] = ('BRANCHINGRATIOS', [6] )
+SLHAdict['BR(h->bbar)_SM=H2']   = ('BRANCHINGRATIOS', [7] )
+SLHAdict['BR(h->ZZ)_SM=H2']     = ('BRANCHINGRATIOS', [8] )
+SLHAdict['BR(h->WW)_SM=H2']     = ('BRANCHINGRATIOS', [9] )
+SLHAdict['BR(h->aa)_SM=H2']     = ('BRANCHINGRATIOS',[10] )
+SLHAdict['BR(h->tautau)_SM=H3'] = ('BRANCHINGRATIOS',[11] )
+SLHAdict['BR(h->bbar)_SM=H3']   = ('BRANCHINGRATIOS',[12] )
+SLHAdict['BR(h->ZZ)_SM=H3']     = ('BRANCHINGRATIOS',[13] )
+SLHAdict['BR(h->WW)_SM=H3']     = ('BRANCHINGRATIOS',[14] )
+SLHAdict['BR(h->aa)_SM=H3']     = ('BRANCHINGRATIOS',[15] )
+
